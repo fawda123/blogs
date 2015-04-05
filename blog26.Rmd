@@ -1,9 +1,69 @@
 
-I am pleased to announce that my second R package, SWMPr, has been posted on CRAN.  I developed this package to work specifically with water quality time series data from the System Wide Monitoring Program (SWMP) of the National Estuarine Research Reserve System (NERRS).  SWMP was established in 1995 to provide continuous environmental data at over 300 stations in 28 estuaries of the United States.  SWMP data are collected with the general objective of describing dynamics of estuarine ecosystems to better inform effective coastal management.  However, simple tools for processing and evaluating the increasing quantity of data provided by the monitoring network have prevented broad-scale comparisons between systems and, in some cases, simple trend analysis of water quality parameters at individual sites. The SWMPr package was developed to address common challenges of working with SWMP data by providing functions to retrieve, organize, and analyze time series data from the monitoring network.  
+<p>I'm pleased to announce that my second R package, SWMPr, has been <a href="http://cran.r-project.org/web/packages/SWMPr/">posted on CRAN</a>. I developed this package to work with water quality time series data from the System Wide Monitoring Program (SWMP) of the National Estuarine Research Reserve System (NERRS). SWMP was established in 1995 to provide continuous environmental data at over 300 fixed stations in 28 estuaries of the United States (more info <a href="http://www.nerrs.noaa.gov/Default.aspx">here</a>). SWMP data are collected with the general objective of describing dynamics of estuarine ecosystems to better inform coastal management. However, simple tools for processing and evaluating the increasing quantity of data provided by the monitoring network have complicated broad-scale comparisons between systems and, in some cases, simple trend analysis of water quality parameters at individual sites. The SWMPr package was developed to address common challenges of working with SWMP data by providing functions to retrieve, organize, and analyze environmental time series data.</p>
+<p>The development version of this package lives on <a href="https://github.com/fawda123/SWMPr">GitHub</a>. It can be installed from CRAN and loaded in R as follows:</p>
 
-The development version of this package lives on [GitHub](https://github.com/fawda123/SWMPr).  It can be installed from CRAN and loaded in R as follows:
-
-[code lang = 'r']
+[code lang="r"]
 install.packages('SWMPr')
 library(SWMPr)
 [/code]
+
+SWMP data are maintained online by the Centralized Data Management Office (<a href="http://cdmo.baruch.sc.edu/">CDMO</a>).  Time series data describing water quality, nutrient, or weather observations can be downloaded for any of the 28 estuaries.  Several functions are provided by the SWMPr package that allow import of data from CDMO into R, either through direct download through the existing web services or by local (<code>import_local</code>) or remote (<code>import_remote</code>) sources.  Imported data are loaded as <code>swmpr </code> objects with several attributes following standard S3 object methods.  The remaining functions in the package are used to organize and analyze the data using a mix of standard methods for time series and more specific approaches developed specifically for SWMP.  This blog concludes with a brief summary of the available functions, organized by category.  As always, be sure to consult the <a href="http://cran.r-project.org/web/packages/SWMPr/SWMPr.pdf">help documentation</a> for more detailed information. 
+
+I've also created two shiny applications to illustrate the functionality provided by the package.  The <a href="https://beckmw.shinyapps.io/swmp_comp">first shiny app</a> evaluates trends in SWMP data within and between sites using an interactive map.  Trends between reserves can be viewed using the map, whereas trends at individual sites can be viewed by clicking on a map location.  The data presented on the map were imported and processed using the <code>import_local</code>, <code>qaqc</code>, and <code>aggregate</code> functions.  The <a href="https://beckmw.shinyapps.io/swmp_summary">second app</a> provides graphical summaries of water quality, weather, or nutrient data at individual stations using the <code>plot_summary</code> function. Data were also processed with the <code>import_local</code>, <code>qaqc</code>, and <code>aggregate</code> functions.
+
+<h3>SWMP trends map (click to access):</h3>
+<a href="https://beckmw.shinyapps.io/swmp_comp"><img src="https://beckmw.files.wordpress.com/2015/04/swmp_comp.png?w=525" alt="swmp_comp" width="525" height="375" class="aligncenter size-large wp-image-1661" /></a>
+
+<h3>SWMP summary map (click to access):</h3>
+<a href="https://beckmw.shinyapps.io/swmp_summary"><img src="https://beckmw.files.wordpress.com/2015/04/swmp_summary.png?w=525" alt="swmp_summary" width="525" /></a>
+
+<h2>SWMPr functions</h2>
+Below is a brief description of each function in the SWMPr package.  I'm currently working on a manuscript to describe use of the package in much greater detail.  For now, please visit our <a href="http://swmprats.net/workshop-2014/">website</a> that introduced version 1.0.0 of the SWMPr package (check the modules tab).  
+<h3>Retrieve</h3>
+<table>
+<tr><td><code>all_params</code></td><td>Retrieve up to 100 records starting with the most recent at a given station, all parameters. Wrapper to <code>exportAllParamsXMLNew</code> function on web services.</td></tr>
+<tr><td><code>all_params_dtrng</code></td><td> Retrieve records of all parameters within a given date range for a station. Optional argument for a single parameter. Maximum of 1000 records. Wrapper to <code>exportAllParamsDateRangeXMLNew</code>.</td></tr>
+<tr><td><code>import_local</code></td><td> Import files from a local path. The files must be in a specific format, specifically those returned from the CDMO using the <a href="http://cdmo.baruch.sc.edu/aqs/zips.cfm">zip downloads</a> option for a reserve.</td></tr>
+<tr><td><code>import_remote</code></td><td> Import SWMP site data from a remote independent server. These files have been downloaded from CDMO, processed using functions in this package, and uploaded to an Amazon server for quicker import into R.</td></tr>
+<tr><td><code>single_param</code></td><td> Retrieve up to 100 records for a single parameter starting with the most recent at a given station. Wrapper to <code>exportSingleParamXMLNew</code> function on web services.</td></tr>
+</table>
+<h3>Organize</h3>
+<table>
+<tr><td><code>comb.swmpr</code></td><td> Combines swmpr objects to a common time series using setstep, such as combining the weather, nutrients, and water quality data for a single station. Only different data types can be combined.</td></tr>
+<tr><td><code>qaqc.swmpr</code></td><td> Remove QAQC columns and remove data based on QAQC flag values for a swmpr object. Only applies if QAQC columns are present.</td></tr>
+<tr><td><code>qaqcchk.swmpr</code></td><td> View a summary of the number of observations in a swmpr object that are assigned to different QAQC flags used by CDMO. The output is used to inform further processing but is not used explicitly.</td></tr>
+<tr><td><code>rem_reps.swmpr</code></td><td> Remove replicate nutrient data that occur on the same day. The default is to average replicates.</td></tr>
+<tr><td><code>setstep.swmpr</code></td><td> Format data from a swmpr object to a continuous time series at a given timestep. The function is used in <code>comb.swmpr</code> and can also be used with individual stations.</td></tr>
+<tr><td><code>subset.swmpr</code></td><td> Subset by dates and/or columns for a swmpr object. This is a method passed to the generic `subset’ function provided in the base package.</td></tr>
+</table>
+<h3>Analyze</h3>
+<table>
+<tr><td><code>aggreswmp.swmpr</code></td><td> Aggregate swmpr objects for different time periods - years, quarters, months, weeks, days, or hours. Aggregation function is user-supplied but defaults to mean.</td></tr>
+<tr><td><code>aggremetab.swmpr</code></td><td> Aggregate metabolism data from a swmpr object. This is primarily used within <code>plot_metab</code> but may be useful for simple summaries of raw daily data.</td></tr>
+<tr><td><code>ecometab.swmpr</code></td><td> Estimate ecosystem metabolism for a combined water quality and weather dataset using the open-water method.</td></tr>
+<tr><td><code>decomp.swmpr</code></td><td> Decompose a swmpr time series into trend, seasonal, and residual components. This is a simple wrapper to <code>decompose</code>. Decomposition of monthly or daily trends is possible.</td></tr>
+<tr><td><code>decomp_cj.swmpr</code></td><td> Decompose a swmpr time series into grandmean, annual, seasonal, and events components. This is a simple wrapper to <code>decompTs</code> in the wq package. Only monthly decomposition is possible.</td></tr>
+<tr><td><code>hist.swmpr</code></td><td> Plot a histogram for a swmpr object.</td></tr>
+<tr><td><code>lines.swmpr</code></td><td> Add lines to an existing swmpr plot.</td></tr>
+<tr><td><code>na.approx.swmpr</code></td><td> Linearly interpolate missing data (<code>NA</code> values) in a swmpr object. The maximum gap size that is interpolated is defined as a maximum number of records with missing data.</td></tr>
+<tr><td><code>plot.swmpr</code></td><td> Plot a univariate time series for a swmpr object. The parameter name must be specified.</td></tr>
+<tr><td><code>plot_metab</code></td><td> Plot ecosystem metabolism estimates after running <code>ecometab</code> on a swmpr object.</td></tr>
+<tr><td><code>plot_summary</code></td><td> Create summary plots of seasonal/annual trends and anomalies for a water quality or weather parameter.</td></tr>
+<tr><td><code>smoother.swmpr</code></td><td> Smooth swmpr objects with a moving window average. Window size and sides can be specified, passed to <code>filter</code>.</td></tr>
+</table>
+<h3>Miscellaneous</h3>
+<table>
+<tr><td><code>calcKL</code></td><td> Estimate the reaeration coefficient for air-sea gas exchange. This is only used within the <code>ecometab</code> function.</td></tr>
+<tr><td><code>map_reserve</code></td><td> Create a map of all stations in a reserve using the ggmap package.</td></tr>
+<tr><td><code>metab_day</code></td><td> Identify the metabolic day for each approximate 24 period in an hourly time series. This is only used within the <code>ecometab</code> function.</td></tr>
+<tr><td><code>param_names</code></td><td> Returns column names as a list for the parameter type(s) (nutrients, weather, or water quality). Includes QAQC columns with ‘f_’ prefix. Used internally in other functions.</td></tr>
+<tr><td><code>parser</code></td><td> Parses html returned from CDMO web services, used internally in retrieval functions.</td></tr>
+<tr><td><code>site_codes</code></td><td> Metadata for all stations, wrapper to <code>exportStationCodesXMLNew</code> function on web services.</td></tr>
+<tr><td><code>site_codes_ind</code></td><td> Metadata for all stations at a single site, wrapper to <code>NERRFilterStationCodesXMLNew</code> function on web services.</td></tr>
+<tr><td><code>swmpr</code></td><td> Creates object of swmpr class, used internally in retrieval functions.</td></tr>
+<tr><td><code>time_vec</code></td><td> Converts time vectors to POSIX objects with correct time zone for a site/station, used internally in retrieval functions.</td></tr>
+</table>
+
+Cheers, 
+
+Marcus
