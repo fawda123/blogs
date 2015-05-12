@@ -1,0 +1,9 @@
+<p>I'll be the first to admit that the topic of plotting ordination results using ggplot2 has been visited many times over.  As is my typical fashion, I started creating a package for this purpose without completely searching for existing solutions.  Namely, the ggbiplot and the factoextra package already provide almost complete coverage of plotting results from multivariate and ordination analyses in R.  Being the stubborn individual, I couldn't give up on my own package so I started exploring ways to improve some of the functionality of biplot methods in these existing packages.  For example, ggbiplot and facoextra work almost exclusively with results from principal components analyses, whereas numerous other multivariate analyses can be visualized using the biplot approach.  I started to write methods to create biplots for some of the common ordination techniques, in addition to al of the functions I could find in R that conduct PCA.  This exercise became very boring very quickly and I stopped adding methods after the first eight or so.  That being said, I present this blog as a sinking ship that was doomed from the beginning, but I'm also hopeful that these functions can be built on by others more ambitious than myself.</p>    
+
+<p>The process of adding methods to a default biplot function in ggplot was pretty simple and not the least bit interesting.  The default ggpord biplot function is very similar to the default biplot function from the stats base package.  Only two inputs are used, the first being a two column matrix of the observation scores for each axis in the biplot and teh second being a two column matrix of the variable scores for each axis.  Creating methods to the generic function required extracting the relevant elements from each model object and then passing them to the default function.  Easy as pie but boring as hell.</p>
+
+
+
+Cheers, 
+
+Marcus
