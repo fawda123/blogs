@@ -1,0 +1,113 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+
+<head>
+
+<meta charset="utf-8">
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+<meta name="generator" content="pandoc" />
+
+
+
+<title></title>
+
+<script src="blog28_files/jquery-1.11.0/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="blog28_files/bootstrap-3.3.1/css/bootstrap.min.css" rel="stylesheet" />
+<script src="blog28_files/bootstrap-3.3.1/js/bootstrap.min.js"></script>
+<script src="blog28_files/bootstrap-3.3.1/shim/html5shiv.min.js"></script>
+<script src="blog28_files/bootstrap-3.3.1/shim/respond.min.js"></script>
+
+<style type="text/css">code{white-space: pre;}</style>
+<link rel="stylesheet"
+      href="blog28_files/highlight/default.css"
+      type="text/css" />
+<script src="blog28_files/highlight/highlight.js"></script>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs && document.readyState && document.readyState === "complete") {
+   window.setTimeout(function() {
+      hljs.initHighlighting();
+   }, 0);
+}
+</script>
+
+
+
+</head>
+
+<body>
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img { 
+  max-width:100%; 
+  height: auto; 
+}
+</style>
+<div class="container-fluid main-container">
+
+
+
+
+<p>I’ve just released an updated version of my package for estuary monitoring data, <a href="https://cran.r-project.org/web/packages/SWMPr/index.html">SWMPr</a>, available on CRAN. I’ve made several additions to the package since it’s initial release - nothing too crazy but enough to warrant another push to CRAN and blog post. I’ve been pretty bad about regular updates but I’ve added a few features to make some of the functions easier to use in addition to some new functions for plotting SWMP data. I’ll start with a brief overview of the package then describe/illustrate some of the major changes since the last version (<a href="https://cran.r-project.org/src/contrib/Archive/SWMPr/">2.0.0</a>) released on CRAN. As always, please keep a close watch on the <a href="https://github.com/fawda123/SWMPr">GitHub repository</a> for progress on the development version of the package.</p>
+<p><b>What is SWMPr?</b> SWMPr is an R package that helps with data retrieval, organization, and analysis of estuary monitoring data from the National Estuarine Research Reserve System (NERRS). NERRS is a collection of reserve programs located at 28 estuaries in the United States. The System-Wide Monitoring Program (SWMP) was established in 1995 as a long-term monitoring program to collect water quality, nutrient, and weather data at over 140 stations at each of the NERRS locations (more info <a href="http://www.nerrs.noaa.gov/Default.aspx">here</a>). To date, over 58 million records have been collected and are available online through the Centralized Data Management Office (<a href="http://cdmo.baruch.sc.edu/">CDMO</a>). The SWMPr package provides a bridge between R and the data provided by SWMP (which explains the super clever name). The package is meant to augment existing services provided by CDMO and to provide additional features for working with water quality time series. The initial release included functions to import SWMP data from the CDMO directly into R, functions for data organization, and some basic analysis functions. The original release also included functions for estimating rates of ecosystem primary production using the open-water method.</p>
+<p><b>What’s new in 2.1?</b> A full list of everything that’s changed can be viewed <a href="https://github.com/fawda123/SWMPr/blob/master/NEWS.md">here</a>. Not all these changes are interesting (bugs mostly), but they are worth viewing if you care about the nitty gritty. The most noteworthy changes include the following:</p>
+<ul>
+<li>The <code>overplot</code> function lets you cheat and plot multiple variables with identical scaling on the same y-axis. I think this is generally discouraged under sound plotting theory (see the rants <a href="http://stackoverflow.com/questions/3099219/how-to-use-ggplot2-make-plot-with-2-y-axes-one-y-axis-on-the-left-and-another">here</a>) but the reality is that overplotting is an often requested feature. I had to use the base graphics to write this function since it’s not possible with ggplot. I actually borrowed most of the code from a colleague at NERRS, shouts to the Grand Bay office. To illustrate ease of use…</li>
+</ul>
+<pre class="r"><code>library(SWMPr)
+
+# import data and do some initial clean up
+data(apacpwq)
+dat &lt;- qaqc(apacpwq)
+
+# a truly heinous plot
+overplot(dat, select = c(&#39;depth&#39;, &#39;do_mgl&#39;, &#39;ph&#39;, &#39;turb&#39;),
+  subset = c(&#39;2013-01-01 0:0&#39;, &#39;2013-02-01 0:0&#39;), lwd = 2)</code></pre>
+<p><img src="blog28_files/figure-html/unnamed-chunk-1-1.png" /></p>
+<ul>
+<li><p>The <code>qaqc</code> function now has more flexible filtering of QAQC data flags by using regular expression matching, rather than searchign by integer flags as in the previous version. What this means is that a user can now filter observations with greater</p></li>
+<li><p>Several of the data import functions were limited in the total number of records that could be requested from the CDMO. I made some dirty looping hacks so that most of these rate limitations, although technically still imposed, can be ignored when making large data reuqests to the CDMO. Previously, the <code>single_param</code>, <code>all_params</code>, and <code>all_params_dtrng</code> functions were limited to 100 records in a single request - not very useful for time series taken every 15 minutes. The new version lets you download any number of records using these functions, although be warned tha t the data request can take a long time for larger requests. As before, your computer’s IP address must be <a href="http://cdmo.baruch.sc.edu/webservices.cfm">registered</a> with the CDMO to use these functions.</p></li>
+<li><p>Although it’s now theoretically possible to retrieve all the data without leaving R, usign the <code>import_local</code> function is still much, much easier. The new release of SWMPr lets you import data</p></li>
+</ul>
+<p>Cheers,</p>
+<p>Marcus</p>
+
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+$(document).ready(function () {
+  $('tr.header').parent('thead').parent('table').addClass('table table-condensed');
+});
+
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://cdn.mathjax.org/mathjax/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>
