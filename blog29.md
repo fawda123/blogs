@@ -1,14 +1,5 @@
----
-output:
-  html_document:
-    keep_md: yes
-    toc: no
-    self_contained: no
----
 
-```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
-```
+
 
 # Overview 
 
@@ -30,7 +21,8 @@ $$
 y = \alpha + \beta\sin\left(2\pi f x + \Phi\right)
 $$
 where the amplitude of the wave is $\beta$ and the frequency (or 1 / period) is $f$. The parameters $\alpha$ and $\Phi$ represent scalar shifts in the curve up/down and left/right, respectively. We can easily create a function in R to simulate sine waves with different characteristics. This function takes the parameters from the above equation as arguments and returns a sine wave ($y$) equal in length to the input time series ($x$).  The $\alpha$ and $\beta$ are interpreted as units of wave height (e.g., meters) and $f$ and \$Phi$ are in hours.
-```{r}
+
+```r
 # function for creating sine wave
 waves <- function(time_in, alpha = 0, beta = 1, freq = 24, phi = 0){
 
@@ -56,7 +48,8 @@ waves <- function(time_in, alpha = 0, beta = 1, freq = 24, phi = 0){
 ```
 
 The default arguments will return a sine wave with an amplitude of one meter and frequency of one wave per 24 hours.  Two additional time series are created that vary these two parameters.
-```{r}
+
+```r
 # input time series for two weeks, 15 minute time step
 x <- as.POSIXct(c('2017-04-01', '2017-04-15'))
 x <- seq(x[1], x[2], by = 60 * 15)
@@ -71,7 +64,8 @@ c <- waves(x, beta = 2, f = 12)
 ```
 
 We can combine all three waves in the same data object, take the summation, and plot to see how it looks.
-```{r, message = F, fig.height = 7, fig.width = 7}
+
+```r
 # for data munging and plotting
 library(tidyverse)
 
@@ -87,13 +81,16 @@ ggplot(dat, aes(x = x, y = val)) +
   theme_bw()
 ```
 
+![](blog29_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
+
 The important piece of information we get from the plot is that adding simple sine waves can create complex patterns. As a general rule, about 83% of the variation in tides is created by seven different harmonic components that, when combined, lead to the complex patterns we observe from monitoring data.  These components are described as being of lunar or solar original and relative periods occuring either once or twice daily.  For example, the so-called 'M2' component is typically the dominant tidal wave caused by the moon, twice daily.  The periods of tidal components are constant across locations but the relative strength (amplitudes) vary considerably.
 
 ![](imgs/maincomponents.PNG)
 
 The [oce](https://cran.r-project.org/web/packages/oce/) package in R has a nifty function for predicting up to 69 different tidal constituents.  You'll typically only care about the main components above but it's useful to appreciate the variety of components included in a tidal signal.  We'll apply the tidem function from oce to predict the tidal components on a subset of SWMP data. A two-week period from the Apalachicola Bay Dry Bar station is used.
 
-```{r, message = F, warning = F}
+
+```r
 library(SWMPr)
 library(oce)
 
@@ -105,14 +102,17 @@ dat <- qaqc(apadbwq) %>%
 ```
 
 The tidem function from oce requires a 'sealevel' object as input. Plotting the sealevel object using the plot method from oce shows three panels; the first is the complete time series, second is the first month in the record, and third is a spectral decomposition of the tidal components as cycles per hour (cph, or period).  
-```{r fig.height = 9, fig.width = 8, }
+
+```r
 datsl <- as.sealevel(elevation = dat$depth, time = dat$datetimestamp)
 plot(datsl)
 ```
 
-We can create a model to estimate the components from the table above using tidem.  Here, we estimate each component separately to extract predictions for each, which we then sum to estimate the complete time series.    
-```{r}
+![](blog29_files/figure-html/unnamed-chunk-5-1.png)<!-- -->
 
+We can create a model to estimate the components from the table above using tidem.  Here, we estimate each component separately to extract predictions for each, which we then sum to estimate the complete time series.    
+
+```r
 # tidal components to estimate
 constituents <- c('M2', 'S2', 'N2', 'K2', 'K1', 'O1', 'P1')
 
@@ -132,9 +132,27 @@ preds <- data.frame(time = datsl[['time']], preds, Estimated = predall)
 head(preds)
 ```
 
+```
+##                  time           M2           S2          N2            K2
+## 1 2013-01-01 00:00:00 -0.111578526 -0.020833606 0.000215982 -0.0048417234
+## 2 2013-01-01 01:00:00 -0.118544835 -0.008940681 0.006428260 -0.0093752262
+## 3 2013-01-01 02:00:00 -0.095806627  0.005348532 0.011088593 -0.0113830570
+## 4 2013-01-01 03:00:00 -0.049059634  0.018205248 0.013072149 -0.0103243372
+## 5 2013-01-01 04:00:00  0.009986414  0.026184523 0.011900172 -0.0064842694
+## 6 2013-01-01 05:00:00  0.066540974  0.027148314 0.007855534 -0.0008973087
+##              K1         O1            P1 Estimated
+## 1  0.0911501572 0.01312209  0.0381700294  1.463683
+## 2  0.0646689921 0.03909021  0.0340807303  1.465686
+## 3  0.0337560517 0.06274939  0.0276811946  1.491713
+## 4  0.0005294868 0.08270543  0.0194051690  1.532812
+## 5 -0.0327340223 0.09778235  0.0098135843  1.574727
+## 6 -0.0637552642 0.10709170 -0.0004434629  1.601819
+```
+
 Plotting two weeks from the estimated data shows the results. Note the variation in amplitude between the components. The M2 , K1, and O1 components are the largest at this location.  Also note the clear spring/neap variation in range every two weeks for the combined time series. This complex fort-nightly variation is caused simply by adding the separate sine waves.  
 
-```{r, fig.height = 10, fig.width = 8, warning = F}
+
+```r
 # prep for plot
 toplo <- preds %>% 
   gather('component', 'estimate', -time) %>% 
@@ -148,8 +166,11 @@ ggplot(toplo, aes(x = time, y = estimate, group = component)) +
   theme_bw() 
 ```
 
+![](blog29_files/figure-html/unnamed-chunk-7-1.png)<!-- -->
+
 All tidal components can of course be estimated together.  By default, the tidem function estimates all 69 tidal components. Looking at our components of interest shows the same estimated amplitudes in the plot above.
-```{r, message = F, warning = F}
+
+```r
 # estimate all components together
 mod <- tidem(t = datsl)
 
@@ -160,9 +181,21 @@ amps <- data.frame(mod@data[c('name', 'amplitude')]) %>%
 amps
 ```
 
+```
+##   name  amplitude
+## 1   K2 0.01091190
+## 2   N2 0.01342395
+## 3   S2 0.02904518
+## 4   P1 0.04100388
+## 5   O1 0.11142455
+## 6   M2 0.12005114
+## 7   K1 0.12865764
+```
+
 And of course comparing the model predictions with the observed data is always a good idea.
  
-```{r, message = F, warning = F, fig.height = 3, fig.width = 8}
+
+```r
 # add predictions to observed data
 dat$Estimated <- predict(mod)
 
@@ -175,13 +208,16 @@ ggplot(dat, aes(x = datetimestamp, y = depth)) +
   theme_bw() 
 ```
 
+![](blog29_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
+
 The fit is not perfect but this could be from several reasons, none of which are directly related to the method - instrument drift, fouling, water movement from non-tidal sources, etc.  The real value of the model is we can use it to fill missing observations in tidal time series or to predict future observations.  We also get reasonable estimates of the main tidal components, i.e., which physical forces are really driving the tide and how large are the contributions.  For example, our data from Apalachicola Bay showed that the tide is driven primarily by the M2, K2, and O1 components, where each had relative amplitudes of about 0.1 meter.  This is consistent with general patterns of micro-tidal systems in the Gulf of Mexico.  Comparing tidal components in other geographic locations would produce very differents results, both in the estimated amplitudes and the dominant components.
 
 # TL/DR {#tldr}
 
 Here's how to estimate the tide from an observed time series. The data are from [SWMPr](https://cran.r-project.org/web/packages/SWMPr/index.html) and the tidem model is from [oce](https://cran.r-project.org/web/packages/oce/index.html).
 
-```{r, message = F, warning = F,  fig.height = 3, fig.width = 8}
+
+```r
 library(SWMPr)
 library(oce)
 
@@ -203,3 +239,5 @@ ggplot(dat, aes(x = datetimestamp, y = Estimated)) +
   geom_line() +
   theme_bw() 
 ```
+
+![](blog29_files/figure-html/unnamed-chunk-10-1.png)<!-- -->
