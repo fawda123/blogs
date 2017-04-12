@@ -5,13 +5,13 @@
 
 Skip to [TL/DR](#tldr)....
 
- ater movement in estuaries is affected by many processes acting across space and time.  Tidal exchange with the ocean is an important hydrodynamic process that can define several characteristics of an estuary.  Physical flushing rates and water circulation are often controlled by tidal advection, whereas chemical and biological components are affected by the flux of dissolved or particulate components with changes in the tide.  As such, describing patterns of tidal variation is a common objective of coastal researchers and environmental managers.
+Water movement in estuaries is affected by many processes acting across space and time.  Tidal exchange with the ocean is an important hydrodynamic process that can define several characteristics of an estuary.  Physical flushing rates and water circulation are often controlled by tidal advection, whereas chemical and biological components are affected by the flux of dissolved or particulate components with changes in the tide.  As such, describing patterns of tidal variation is a common objective of coastal researchers and environmental managers.
 
 Tidal predictions are nothing new.  A clever analog approach has been around since the late 1800s.  The [tide-predicting machine](https://en.wikipedia.org/wiki/Tide-predicting_machine) represents the tide as the summation of waves with different periods and amplitudes.  Think of a continuous line plot where the repeating pattern is linked to a rotating circle,  Representing the line in two-dimensions from the rotating circle creates a sine wave with the amplitude equal to the radius of the circle.  A more complex plot can be created by adding the output of two or more rotating disks, where each disk varies in radius and rate of rotation.  The tide-predicting machine is nothing more than a set of rotating disks linked to a single graph as the sum of the rotations from all disks. Here's a fantastic [digital representation](http://www.ams.org/samplings/feature-column/fcarc-tidesiii3) of the tide-predicting machine:
 
 ![](imgs/tidemachine.PNG)
 
-Tides are caused primarily by the gravitational pull of the sun and moon on the earth's surface.  The elliptical orbits of both the moon around the earth and the earth around the sun produce periodic but unequal forces that influence water movement.  These forces combined with local surface topography and large-scale circulation patterns from uneven heating of the earth's surface lead to the variation of tidal patterns across the globe.  Although complex, these periodic patterns can be characterized as the summation of sine waves, where one wave represents the effect of a single physical process (e.q., diurnal pull of the moon).  Describing these forces was the objecive of the earlier tide-predicting machines.  Fortunately for us, modern software (i.e., R) provides us with a simpler and less expensive approach based on harmonic regression.  
+Tides are caused primarily by the gravitational pull of the sun and moon on the earth's surface.  The elliptical orbits of both the moon around the earth and the earth around the sun produce periodic but unequal forces that influence water movement.  These forces combined with local surface topography and large-scale circulation patterns from uneven heating of the earth's surface lead to the variation of tidal patterns across the globe.  Although complex, these periodic patterns can be characterized as the summation of sine waves, where one wave represents the effect of a single physical process (e.g., diurnal pull of the moon).  Describing these forces was the objecive of the earlier tide-predicting machines.  Fortunately for us, modern software (i.e., R) provides us with a simpler and less expensive approach based on harmonic regression.  
 
 # Approach 
 
@@ -83,7 +83,7 @@ ggplot(dat, aes(x = x, y = val)) +
 
 ![](blog29_files/figure-html/unnamed-chunk-3-1.png)<!-- -->
 
-The important piece of information we get from the plot is that adding simple sine waves can create complex patterns. As a general rule, about 83% of the variation in tides is created by seven different harmonic components that, when combined, lead to the complex patterns we observe from monitoring data.  These components are described as being of lunar or solar original and relative periods occuring either once or twice daily.  For example, the so-called 'M2' component is typically the dominant tidal wave caused by the moon, twice daily.  The periods of tidal components are constant across locations but the relative strength (amplitudes) vary considerably.
+The important piece of information we get from the plot is that adding simple sine waves can create complex patterns. As a general rule, about 83% of the variation in tides is created by seven different harmonic components that, when combined, lead to the complex patterns we observe from monitoring data.  These components are described as being of lunar or solar origin and relative periods occurring either once or twice daily.  For example, the so-called 'M2' component is typically the dominant tidal wave caused by the moon, twice daily.  The periods of tidal components are constant across locations but the relative strength (amplitudes) vary considerably.
 
 ![](imgs/maincomponents.PNG)
 
@@ -174,7 +174,7 @@ All tidal components can of course be estimated together.  By default, the tidem
 # estimate all components together
 mod <- tidem(t = datsl)
 
-# get components of interst
+# get components of interest
 amps <- data.frame(mod@data[c('name', 'amplitude')]) %>% 
   filter(name %in% constituents) %>% 
   arrange(amplitude)
@@ -210,7 +210,7 @@ ggplot(dat, aes(x = datetimestamp, y = depth)) +
 
 ![](blog29_files/figure-html/unnamed-chunk-9-1.png)<!-- -->
 
-The fit is not perfect but this could be from several reasons, none of which are directly related to the method - instrument drift, fouling, water movement from non-tidal sources, etc.  The real value of the model is we can use it to fill missing observations in tidal time series or to predict future observations.  We also get reasonable estimates of the main tidal components, i.e., which physical forces are really driving the tide and how large are the contributions.  For example, our data from Apalachicola Bay showed that the tide is driven primarily by the M2, K2, and O1 components, where each had relative amplitudes of about 0.1 meter.  This is consistent with general patterns of micro-tidal systems in the Gulf of Mexico.  Comparing tidal components in other geographic locations would produce very differents results, both in the estimated amplitudes and the dominant components.
+The fit is not perfect but this could be from several reasons, none of which are directly related to the method - instrument drift, fouling, water movement from non-tidal sources, etc.  The real value of the model is we can use it to fill missing observations in tidal time series or to predict future observations.  We also get reasonable estimates of the main tidal components, i.e., which physical forces are really driving the tide and how large are the contributions.  For example, our data from Apalachicola Bay showed that the tide is driven primarily by the M2, K1, and O1 components, where each had relative amplitudes of about 0.1 meter.  This is consistent with general patterns of micro-tidal systems in the Gulf of Mexico.  Comparing tidal components in other geographic locations would produce very differents results, both in the estimated amplitudes and the dominant components.
 
 # TL/DR {#tldr}
 
